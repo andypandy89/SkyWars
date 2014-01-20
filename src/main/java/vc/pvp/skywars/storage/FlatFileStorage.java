@@ -34,6 +34,10 @@ public class FlatFileStorage extends DataStorage {
             if (!PluginConfig.useEconomy() || SkyWars.getEconomy() == null) {
                 player.setScore(fileConfiguration.getInt("score", 0));
             }
+            player.setGamesWon(fileConfiguration.getInt("wins", 0));
+            player.setGamesPlayed(fileConfiguration.getInt("played", 0));
+            player.setKills(fileConfiguration.getInt("kills", 0));
+            player.setDeaths(fileConfiguration.getInt("deaths", 0));
 
         } catch (IOException ioException) {
             System.out.println("Failed to load player " + player + ": " + ioException.getMessage());
@@ -59,6 +63,10 @@ public class FlatFileStorage extends DataStorage {
 
             FileConfiguration fileConfiguration = YamlConfiguration.loadConfiguration(playerFile);
             fileConfiguration.set("score", player.getScore());
+            fileConfiguration.set("wins", Integer.valueOf(player.getGamesWon()));
+            fileConfiguration.set("played", Integer.valueOf(player.getGamesPlayed()));
+            fileConfiguration.set("deaths", Integer.valueOf(player.getDeaths()));
+            fileConfiguration.set("kills", Integer.valueOf(player.getKills()));
             fileConfiguration.save(playerFile);
 
         } catch (IOException ioException) {

@@ -19,6 +19,9 @@ public class MainCommand implements CommandExecutor {
         subCommandMap.put("setlobby", new SetLobbyCommand());
         subCommandMap.put("start", new StartCommand());
         subCommandMap.put("leave", new LeaveCommand());
+        subCommandMap.put("score", new ScoreCommand());
+        subCommandMap.put("give", new GiveScoreCommand());
+        subCommandMap.put("set", new SetScoreCommand());
     }
 
     @Override

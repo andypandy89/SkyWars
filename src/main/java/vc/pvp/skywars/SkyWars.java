@@ -12,6 +12,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import vc.pvp.skywars.commands.MainCommand;
+import vc.pvp.skywars.commands.ScoreCommand;
 import vc.pvp.skywars.controllers.*;
 import vc.pvp.skywars.database.Database;
 import vc.pvp.skywars.listeners.BlockListener;
@@ -58,6 +59,7 @@ public class SkyWars extends JavaPlugin {
         new Messaging(this);
 
         getCommand("skywars").setExecutor(new MainCommand());
+        getCommand("score").setExecutor(new ScoreCommand());
         getCommand("global").setExecutor(new CommandExecutor() {
             @Override
             public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -122,6 +124,12 @@ public class SkyWars extends JavaPlugin {
         ChestController.get();
         KitController.get();
         IconMenuController.get();
+        
+        for (Player player : Bukkit.getOnlinePlayers()) {
+        	PlayerController.get().register(player);
+        }
+        
+        GlobalScoreboardController.get();
 
         try {
             MetricsLite metrics = new MetricsLite(this);
@@ -143,13 +151,13 @@ public class SkyWars extends JavaPlugin {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SyncTask(), 20L, 20L);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
     @Override
     public void onDisable() {
         Bukkit.getScheduler().cancelTasks(this);
 
         GameController.get().shutdown();
         PlayerController.get().shutdown();
+    	GlobalScoreboardController.get().shutdown();
 
         if (DataStorage.get() instanceof SQLStorage && !CraftBukkitUtil.isRunning()) {
             SQLStorage sqlStorage = (SQLStorage) DataStorage.get();

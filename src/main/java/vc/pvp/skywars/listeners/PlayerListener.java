@@ -12,6 +12,7 @@ import vc.pvp.skywars.config.PluginConfig;
 import vc.pvp.skywars.controllers.GameController;
 import vc.pvp.skywars.controllers.PlayerController;
 import vc.pvp.skywars.controllers.SchematicController;
+import vc.pvp.skywars.controllers.GlobalScoreboardController;
 import vc.pvp.skywars.game.Game;
 import vc.pvp.skywars.game.GameState;
 import vc.pvp.skywars.player.GamePlayer;
@@ -25,6 +26,9 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         PlayerController.get().register(event.getPlayer());
+        GlobalScoreboardController.get().addPlayerToScoreboard(event.getPlayer());
+        GlobalScoreboardController.get().joinScoreboard(event.getPlayer());
+        GlobalScoreboardController.get().updatePlayers();
     }
 
     @EventHandler
@@ -36,8 +40,11 @@ public class PlayerListener implements Listener {
             gamePlayer.getGame().onPlayerLeave(gamePlayer);
         }
 
+        GlobalScoreboardController.get().updatePlayers();
         gamePlayer.save();
         PlayerController.get().unregister(player);
+        (GlobalScoreboardController.get().getScoreboards().get(event.getPlayer().getName())).getObjective("skywars").unregister();
+        GlobalScoreboardController.get().getScoreboards().remove(player.getName());
     }
 
     @EventHandler

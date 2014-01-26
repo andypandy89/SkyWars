@@ -50,7 +50,7 @@ island-buffer: 5
 # Whether to build the schematic instead of pasting it straight in
 # This happens to freeze clients due to the chunk updates
 island-building:
-  enabled: false
+  enabled: true
   # The interval in ticks (1 tick = aprox. 50ms)
   interval: 1
   # The amount of blocks per tick
@@ -77,3 +77,6 @@ clear-inventory-on-join: true
 save-inventory: false
 # Commands which should be allowed to be used in a Skywars game
 whitelisted-commands: [g, global]
+schematics:
+5:
+min-player:4:

@@ -147,7 +147,7 @@ public class WorldController {
             if (ret) {
                 MultiverseWorld mvWorld = mV.getMVWorldManager().getMVWorld(worldName);
                 world = mvWorld.getCBWorld();
-                mvWorld.setDifficulty(Difficulty.NORMAL.toString());
+                mvWorld.setDifficulty(Difficulty.NORMAL);
                 mvWorld.setPVPMode(true);
                 mvWorld.setEnableWeather(false);
                 mvWorld.setKeepSpawnInMemory(false);

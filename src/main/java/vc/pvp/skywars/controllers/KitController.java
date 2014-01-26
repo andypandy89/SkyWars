@@ -73,11 +73,21 @@ public class KitController {
     }
 
     public boolean isPurchaseAble(Kit kit) {
-        return kit.getPoints() > 0;
+        return kit.getPoints() > 0 || kit.getMoney() > 0;
     }
 
     public boolean canPurchase(GamePlayer gamePlayer, Kit kit) {
-        return kit.getPoints() > 0 && (gamePlayer.getScore() >= kit.getPoints());
+    	if (kit.getPoints() > 0) {
+    		if (gamePlayer.getScore() < kit.getPoints()) {
+    			return false;
+    		}
+    	}
+    	if (kit.getMoney() > 0) {
+    		if (SkyWars.getEconomy() != null && !SkyWars.getEconomy().has(gamePlayer.getName(), kit.getMoney())) {
+    			return false;
+    		}
+    	}
+    	return isPurchaseAble(kit);
     }
 
     public void populateInventory(Inventory inventory, Kit kit) {
@@ -123,6 +133,9 @@ public class KitController {
                     }
 
                     gamePlayer.setScore(gamePlayer.getScore() - kit.getPoints());
+                    if (SkyWars.getEconomy() != null) {
+                    	SkyWars.getEconomy().withdrawPlayer(gamePlayer.getName(), kit.getMoney());
+                    }
 
                 } else if (!hasPermission(event.getPlayer(), kit)) {
                     event.getPlayer().sendMessage(new Messaging.MessageFormatter().format("error.no-permission-kit"));
@@ -149,7 +162,10 @@ public class KitController {
             boolean canPurchase = false;
 
             if (isPurchaseAble(kit)) {
-                loreList.add("\247r\2476Price\247f: \247" + (gamePlayer.getScore() >= kit.getPoints() ? 'a' : 'c') + kit.getPoints());
+                loreList.add("\247r\2476Point Price\247f: \247" + (gamePlayer.getScore() >= kit.getPoints() ? 'a' : 'c') + kit.getPoints());
+                if (SkyWars.getEconomy() != null) {
+                	loreList.add("\247r\2476Money Price\247f: \247" + (SkyWars.getEconomy().has(gamePlayer.getName(), kit.getMoney()) ? 'a' : 'c') + SkyWars.getEconomy().format(kit.getMoney()));
+                }
                 loreList.add(" ");
 
                 if (canPurchase(gamePlayer, kit)) {
@@ -180,6 +196,7 @@ public class KitController {
     public class Kit {
 
         private String name;
+        private int money;
         private int points;
         private List<ItemStack> items = Lists.newArrayList();
 
@@ -199,6 +216,7 @@ public class KitController {
                 }
             }
 
+            money = storage.getInt("money", 0);
             points = storage.getInt("points", 0);
 
             String icon = storage.getString("icon.material", "STONE");
@@ -228,6 +246,10 @@ public class KitController {
 
         public String getName() {
             return name;
+        }
+
+        public int getMoney() {
+            return money;
         }
 
         public int getPoints() {

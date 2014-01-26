@@ -6,15 +6,15 @@ import com.sk89q.worldedit.CuboidClipboard;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.scoreboard.DisplaySlot;
-import org.bukkit.scoreboard.Objective;
-import org.bukkit.scoreboard.Scoreboard;
 import vc.pvp.skywars.SkyWars;
 import vc.pvp.skywars.config.PluginConfig;
 import vc.pvp.skywars.controllers.*;
@@ -39,9 +39,8 @@ public class Game {
     private int slots;
     private Map<Integer, Location> spawnPlaces = Maps.newHashMap();
     private int timer;
-    private Scoreboard scoreboard;
-    private Objective objective;
     private boolean built;
+    private GameScoreboardController scoreboardController;
 
     private CuboidClipboard schematic;
     private World world;
@@ -91,6 +90,13 @@ public class Game {
 
     public World getWorld() {
         return world;
+    }
+    
+    public GameScoreboardController getScoreboardController() {
+    	if (scoreboardController == null) {
+    		scoreboardController = new GameScoreboardController(this);
+    	}
+    	return scoreboardController;
     }
 
     public void setGridReference(int[] gridReference) {
@@ -176,11 +182,12 @@ public class Game {
 
         IconMenuController.get().destroy(player);
 
+        playerCount--;
         if (displayText) {
             if (left && gameState == GameState.PLAYING) {
                 int scorePerLeave = PluginConfig.getScorePerLeave(player);
                 gamePlayer.addScore(scorePerLeave);
-
+                GlobalScoreboardController.get().updateScore(player);
                 sendMessage(new Messaging.MessageFormatter()
                         .withPrefix()
                         .setVariable("player", player.getDisplayName())
@@ -197,13 +204,9 @@ public class Game {
             }
         }
 
-        if (scoreboard != null) {
-            objective.getScore(player).setScore(-playerCount);
-            try {
-                player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
-            } catch (IllegalStateException ignored) {
-
-            }
+        if(gameState == GameState.PLAYING) {
+        	getScoreboardController().updateScoreboard();
+        	getScoreboardController().removeFromScoreboards(player);
         }
 
         if (player.isDead()) {
@@ -223,34 +226,73 @@ public class Game {
         
         player.setFireTicks(0);
 
-        playerCount--;
         idPlayerMap.put(playerIdMap.remove(gamePlayer), null);
         gamePlayer.setChosenKit(false);
+        
+        player.setScoreboard(GlobalScoreboardController.get().getScoreboards().get(player.getName()));
 
         if (process && gameState == GameState.PLAYING && playerCount == 1) {
             onGameEnd(getWinner());
         }
     }
-
-    public void onPlayerDeath(final GamePlayer gamePlayer, PlayerDeathEvent event) {
-        final Player player = gamePlayer.getBukkitPlayer();
+    
+    public void onPlayerDeath(final GamePlayer gamePlayer, PlayerDeathEvent event, String killerName) {
+    	final Player player = gamePlayer.getBukkitPlayer();
         Player killer = player.getKiller();
 
         int scorePerDeath = PluginConfig.getScorePerDeath(player);
         gamePlayer.addScore(scorePerDeath);
         gamePlayer.setDeaths(gamePlayer.getDeaths() + 1);
+        
+        EntityType projectile = null;
+        
+        if (killerName != null) {
+        	if (killerName.contains(":")) {
+        		String[] split = killerName.split(":");
+        		killerName = split[0];
+        		
+        		for (EntityType type : EntityType.values()) {
+        			if (type == null || type.name() == null) {
+        				continue;
+        			}
+        			if (type.name().equals(split[1])) {
+        				projectile = type;
+        			}
+        		}
+        	}
+        	if (Bukkit.getPlayer(killerName) == null) {
+        		killerName = null;
+        	}
+        }
 
-        if (killer != null) {
-            GamePlayer gameKiller = PlayerController.get().get(killer);
+        if (killer != null || killerName != null) {
+            GamePlayer gameKiller = killer == null ? PlayerController.get().get(Bukkit.getPlayer(killerName)) : PlayerController.get().get(killer);
 
             int scorePerKill = PluginConfig.getScorePerKill(killer);
             gameKiller.addScore(scorePerKill);
             gameKiller.setKills(gameKiller.getKills() + 1);
 
+            String projectileString = "";
+            
+            if (projectile != null) {
+            	switch (projectile) {
+            	case ARROW:
+            		projectileString = " shooting an arrow";
+            	case FIREBALL:
+            		projectileString = " casting a fireball";
+            	case FISHING_HOOK:
+            		projectileString = " fishing";
+            	case SNOWBALL:
+            		projectileString = " throwing a snowball";
+        		default:
+            		break;
+            	}
+            }
+            
             sendMessage(new Messaging.MessageFormatter()
                     .withPrefix()
                     .setVariable("player", player.getDisplayName())
-                    .setVariable("killer", killer.getDisplayName())
+                    .setVariable("killer", killer.getDisplayName()+projectileString)
                     .setVariable("player_score", StringUtils.formatScore(scorePerDeath, Messaging.getInstance().getMessage("score.naming")))
                     .setVariable("killer_score", StringUtils.formatScore(scorePerKill, Messaging.getInstance().getMessage("score.naming")))
                     .format("game.kill"));
@@ -301,26 +343,32 @@ public class Game {
         }
     }
 
+    public void onPlayerDeath(final GamePlayer gamePlayer, PlayerDeathEvent event) {
+        onPlayerDeath(gamePlayer, event, null);
+    }
+
     public void onGameStart() {
-        registerScoreboard();
+        getScoreboardController().registerScoreboard();
         gameState = GameState.PLAYING;
 
         for (Map.Entry<Integer, GamePlayer> playerEntry : idPlayerMap.entrySet()) {
             GamePlayer gamePlayer = playerEntry.getValue();
 
             if (gamePlayer != null) {
-                objective.getScore(gamePlayer.getBukkitPlayer()).setScore(0);
                 IconMenuController.get().destroy(gamePlayer.getBukkitPlayer());
-                getSpawn(playerEntry.getKey()).clone().add(0, -1D, 0).getBlock().setTypeId(0);
+                getSpawn(playerEntry.getKey()).clone().add(0, -1D, 0).getBlock().setType(Material.AIR);
                 gamePlayer.setGamesPlayed(gamePlayer.getGamesPlayed() + 1);
             }
         }
+        
+        getScoreboardController().updateScoreboard();
 
         for (GamePlayer gamePlayer : getPlayers()) {
             gamePlayer.getBukkitPlayer().setHealth(20D);
             gamePlayer.getBukkitPlayer().setFoodLevel(20);
-
-            gamePlayer.getBukkitPlayer().setScoreboard(scoreboard);
+            
+            getScoreboardController().setScoreboard(gamePlayer.getBukkitPlayer());
+            
             gamePlayer.getBukkitPlayer().sendMessage(new Messaging.MessageFormatter().withPrefix().format("game.start"));
         }
     }
@@ -334,8 +382,9 @@ public class Game {
             Player player = gamePlayer.getBukkitPlayer();
             int score = PluginConfig.getScorePerWin(player);
             gamePlayer.addScore(score);
+            GlobalScoreboardController.get().updateScore(player);
             gamePlayer.setGamesWon(gamePlayer.getGamesWon() + 1);
-
+            GlobalScoreboardController.get().updateWins(player);
             Bukkit.broadcastMessage(new Messaging.MessageFormatter()
                     .withPrefix()
                     .setVariable("player", player.getDisplayName())
@@ -344,12 +393,14 @@ public class Game {
                     .format("game.win" ) );
         }
 
+        GlobalScoreboardController.get().updateActiveGames();
+
         for (GamePlayer player : getPlayers()) {
             onPlayerLeave(player, false, false, false);
         }
 
         gameState = GameState.ENDING;
-        unregisterScoreboard();
+        getScoreboardController().unregisterScoreboard();
 
         GameController.get().remove(this);
     }
@@ -366,6 +417,19 @@ public class Game {
                 if (timer == 0) {
                     onGameStart();
                 } else if (timer % 10 == 0 || timer <= 5) {
+                	if (timer <= 5) {
+                		for (GamePlayer gamePlayer : idPlayerMap.values()) {
+                			if (gamePlayer == null) {
+                				continue;
+                			}
+                			Player player = gamePlayer.getBukkitPlayer();
+                			if (player == null) {
+                				continue;
+                			}
+                			player.getWorld().playSound(player.getLocation(), 
+                					Sound.SUCCESSFUL_HIT, 10, 1);
+                		}
+                	}
                     sendMessage(new Messaging.MessageFormatter()
                             .withPrefix()
                             .setVariable("timer", String.valueOf(timer))
@@ -373,7 +437,7 @@ public class Game {
                 }
                 break;
 
-            case PLAYING:
+            default:
                 break;
         }
     }
@@ -454,26 +518,5 @@ public class Game {
 
     public void addSpawn(int id, Location location) {
         spawnPlaces.put(id, location);
-    }
-
-    private void registerScoreboard() {
-        if (scoreboard != null) {
-            unregisterScoreboard();
-        }
-
-        scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
-        objective = scoreboard.registerNewObjective("info", "dummy");
-        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
-        objective.setDisplayName("\247c\247lLeaderBoard");
-    }
-
-    private void unregisterScoreboard() {
-        if (objective != null) {
-            objective.unregister();
-        }
-
-        if (scoreboard != null) {
-            scoreboard = null;
-        }
     }
 }

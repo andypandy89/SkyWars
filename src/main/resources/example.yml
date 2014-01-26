@@ -5,6 +5,8 @@ icon:
   data: 0
 # Gives the player the permission to purchase this kit through score (optional)
 points: 15000000
+# Gives the player the permission to purchase this kit through money (optional)
+money: 15000000
 # Additional text added to the lores of the item in the inventory menu (optional)
 details:
 - '&aHello'

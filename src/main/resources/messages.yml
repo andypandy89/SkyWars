@@ -31,10 +31,16 @@ error:
   no-such-kit: '&cNo such kit!'
   not-enough-score: '&cNot enough score to purchase this kit!'
   no-permission-kit: '&cNo permission to use this kit!'
+  no-valid-score: '&cNot a valid score!'
+  no-valid-player: '&cNot a valid player!'
+  not-enough-arguments: '&cNot enough arguments. &f{example}'
 success:
   lobby-set: '&aLobby spawn has been set.'
   reload: '&aChests, kits and plugin.yml has been reloaded'
   enjoy-kit: '&aEnjoy your kit!'
+  score-give: '&6{player}&a''s score has been set to &6{value}'
+  score-set: '&6{value} &ahas been added to &6{player}&a''s score'
+  score: '&aYour score is: &6{value}'
 cmd:
   available-commands: '&eAvailable commands:'
 kit:

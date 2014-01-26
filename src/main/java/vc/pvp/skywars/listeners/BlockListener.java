@@ -16,7 +16,9 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
         GamePlayer gamePlayer = PlayerController.get().get(player);
 
-        if (gamePlayer.isPlaying() && gamePlayer.getGame().getState() == GameState.WAITING) {
+        if (gamePlayer.isPlaying() && gamePlayer.getGame().getState() == GameState.PLAYING) {
+        	gamePlayer.getGame().getScoreboardController().addPlaced();
+        } else if (gamePlayer.isPlaying()) {
             event.setCancelled(true);
         }
     }
@@ -26,7 +28,9 @@ public class BlockListener implements Listener {
         Player player = event.getPlayer();
         GamePlayer gamePlayer = PlayerController.get().get(player);
 
-        if (gamePlayer.isPlaying() && gamePlayer.getGame().getState() == GameState.WAITING) {
+        if (gamePlayer.isPlaying() && gamePlayer.getGame().getState() == GameState.PLAYING) {
+        	gamePlayer.getGame().getScoreboardController().addBroken();
+        } else if (gamePlayer.isPlaying()) {
             event.setCancelled(true);
         }
     }

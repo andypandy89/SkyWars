@@ -1,16 +1,18 @@
 package vc.pvp.skywars.controllers;
 
 import com.google.common.collect.Maps;
+
 import vc.pvp.skywars.SkyWars;
 
 import java.util.List;
 import java.util.Map;
 
+@SuppressWarnings("unused")
 public class StatisticsController {
 
     private static StatisticsController statisticsController;
     private Map<String, Integer> topList = Maps.newLinkedHashMap();
-    private List<TopThreeStatue> topThreeStatueList;
+	private List<TopThreeStatue> topThreeStatueList;
 
     public StatisticsController() {
 

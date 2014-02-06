@@ -6,7 +6,6 @@ import org.bukkit.entity.Player;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Method;
-import vc.pvp.skywars.config.PluginConfig;
 
 public class CraftBukkitUtil {
 

@@ -7,18 +7,23 @@ import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.data.DataException;
 import com.sk89q.worldedit.schematic.SchematicFormat;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+
 import vc.pvp.skywars.SkyWars;
 import vc.pvp.skywars.utilities.LogUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.logging.Level;
+
 import vc.pvp.skywars.config.PluginConfig;
 
 public class SchematicController {
@@ -119,7 +124,23 @@ public class SchematicController {
         List<CuboidClipboard> schematics = Lists.newArrayList(schematicMap.values());
         return schematics.get(random.nextInt(schematics.size()));
     }
+    
+    //
+    // Method for future - pick size of maps
+    //
+    public CuboidClipboard getRandomWithSlots(int desiredSlots) {
+    	Iterator<Entry<String, CuboidClipboard>> it = schematicMap.entrySet().iterator();
+    	List<CuboidClipboard> schematics = Lists.newArrayList();
+        while (it.hasNext()) {
+            Map.Entry<String, CuboidClipboard> pairs = it.next();
+            int mapSlots = SkyWars.get().getConfig().getInt("schematics." + pairs.getKey() + ".min-players", 0);
+            if (desiredSlots == mapSlots) schematics.add(pairs.getValue());
+            it.remove(); // avoids a ConcurrentModificationException
+        }
+        return schematics.get(random.nextInt(schematics.size()));
+    }
 
+    
     public String getName(CuboidClipboard cuboidClipboard) {
         for (Map.Entry<String, CuboidClipboard> entry : schematicMap.entrySet()) {
             if (entry.getValue().equals(cuboidClipboard)) {

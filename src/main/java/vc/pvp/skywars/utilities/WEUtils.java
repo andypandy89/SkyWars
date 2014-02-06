@@ -7,8 +7,10 @@ import com.sk89q.worldedit.MaxChangedBlocksException;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+
 import vc.pvp.skywars.SkyWars;
 import vc.pvp.skywars.build.BlockBuilder;
 import vc.pvp.skywars.build.BlockBuilderEntry;
@@ -36,7 +38,8 @@ public class WEUtils {
 
     public static void buildSchematic(final Game game, final Location origin, final CuboidClipboard schematic) {
         Bukkit.getScheduler().runTaskAsynchronously(SkyWars.get(), new Runnable() {
-            @Override
+            @SuppressWarnings("deprecation")
+			@Override
             public void run() {
                 Vector pasteLocation = new Vector(origin.getBlockX(), origin.getBlockY(), origin.getBlockZ());
 
@@ -93,7 +96,7 @@ public class WEUtils {
                 Collections.sort(blockQueue, new Comparator<BlockBuilderEntry>() {
                     @Override
                     public int compare(BlockBuilderEntry o1, BlockBuilderEntry o2) {
-                        return Integer.compare(o1.getLocation().getBlockY(), o2.getLocation().getBlockY());
+                    	return Integer.valueOf(o1.getLocation().getBlockY()).compareTo(Integer.valueOf(o2.getLocation().getBlockY()));
                     }
                 });
 

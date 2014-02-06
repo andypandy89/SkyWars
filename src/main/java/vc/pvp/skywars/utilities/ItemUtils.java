@@ -5,6 +5,7 @@ import com.flobi.WhatIsIt.WhatIsIt;
 import com.sk89q.commandbook.util.ItemUtil;
 import com.sk89q.minecraft.util.commands.CommandException;
 import com.sk89q.worldedit.blocks.ItemType;
+
 import org.bukkit.ChatColor;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -12,9 +13,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+
 import net.ess3.api.IEssentials;
 import net.milkbowl.vault.item.ItemInfo;
 import net.milkbowl.vault.item.Items;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
@@ -33,7 +36,8 @@ public class ItemUtils {
      * @param args Format: Name:Durability Amount Enchantment1:Level,Enchantment2:Level
      * @return The ItemStack or null if not found
      */
-    public static ItemStack parseItem(String[] args) {
+    @SuppressWarnings("deprecation")
+	public static ItemStack parseItem(String[] args) {
         if (args.length < 1) {
             return null;
         }
@@ -58,7 +62,7 @@ public class ItemUtils {
             if (Bukkit.getServer().getPluginManager().getPlugin("WorldEdit") != null) {
                 ItemType itemType = ItemType.lookup(typeInput);
                 if (itemType != null) {
-                    mat = Material.getMaterial(itemType.getID());
+                    mat = Material.getMaterial(itemType.name());
                 }
             }
         }
@@ -197,7 +201,8 @@ public class ItemUtils {
      * @param stack The item stack
      * @return Friendly name
      */
-    public static String itemName(ItemStack stack) {
+    @SuppressWarnings("deprecation")
+	public static String itemName(ItemStack stack) {
         String name = null;
         if (Bukkit.getPluginManager().getPlugin("WhatIsIt") != null) {
             name = WhatIsIt.itemName(stack);

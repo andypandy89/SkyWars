@@ -3,9 +3,10 @@ package vc.pvp.skywars.tasks;
 import vc.pvp.skywars.controllers.GameController;
 import vc.pvp.skywars.game.Game;
 
+@SuppressWarnings("unused")
 public class SyncTask implements Runnable {
 
-    private int tickCounter;
+	private int tickCounter;
 
     @Override
     public void run() {

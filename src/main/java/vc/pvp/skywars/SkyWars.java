@@ -144,7 +144,7 @@ public class SkyWars extends JavaPlugin {
         Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new SyncTask(), 20L, 20L);
     }
 
-    @SuppressWarnings("StatementWithEmptyBody")
+    //@SuppressWarnings("StatementWithEmptyBody")
     @Override
     public void onDisable() {
 

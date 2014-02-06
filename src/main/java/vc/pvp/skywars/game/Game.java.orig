@@ -3,9 +3,12 @@ package vc.pvp.skywars.game;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.sk89q.worldedit.CuboidClipboard;
+
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.ExperienceOrb;
@@ -15,6 +18,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
+
 import vc.pvp.skywars.SkyWars;
 import vc.pvp.skywars.config.PluginConfig;
 import vc.pvp.skywars.controllers.*;
@@ -124,9 +128,9 @@ public class Game {
     public void onPlayerJoin(GamePlayer gamePlayer) {
         Player player = gamePlayer.getBukkitPlayer();
 
-        int id = getFirstEmpty();
+        int id = getFistEmpty();
         playerCount++;
-        idPlayerMap.put(id, gamePlayer);
+        idPlayerMap.put(getFistEmpty(), gamePlayer);
         playerIdMap.put(gamePlayer, id);
 
         sendMessage(new Messaging.MessageFormatter()
@@ -251,13 +255,10 @@ public class Game {
         int scorePerDeath = PluginConfig.getScorePerDeath(player);
         gamePlayer.addScore(scorePerDeath);
         gamePlayer.setDeaths(gamePlayer.getDeaths() + 1);
-        
-        GamePlayer gameKiller = null;
-        if (killer != null) {
-            gameKiller = PlayerController.get().get(killer);
-        }
 
-        if (gameKiller != null) {
+        if (killer != null) {
+            GamePlayer gameKiller = PlayerController.get().get(killer);
+
             int scorePerKill = PluginConfig.getScorePerKill(killer);
             gameKiller.addScore(scorePerKill);
             gameKiller.setKills(gameKiller.getKills() + 1);
@@ -420,7 +421,6 @@ public class Game {
 
         int minPlayers = config.getInt("schematics." + schematicName + ".min-players", slots);
         int onlinePlayers = Bukkit.getOnlinePlayers().length;
-        onlinePlayers = (onlinePlayers > 1) ? onlinePlayers : 2;
         return (minPlayers > onlinePlayers) ? onlinePlayers : minPlayers;
     }
 
@@ -437,7 +437,9 @@ public class Game {
 
     public void sendMessage(String message) {
         for (GamePlayer gamePlayer : getPlayers()) {
-            gamePlayer.getBukkitPlayer().sendMessage(message);
+        	Player bukkitPlayer = gamePlayer.getBukkitPlayer();
+        	bukkitPlayer.playSound(bukkitPlayer.getLocation(), Sound.NOTE_PIANO, 1.0f, 1.0f);
+            bukkitPlayer.sendMessage(message);
         }
     }
 
@@ -453,7 +455,7 @@ public class Game {
         return null;
     }
 
-    private int getFirstEmpty() {
+    private int getFistEmpty() {
         for (Map.Entry<Integer, GamePlayer> playerEntry : idPlayerMap.entrySet()) {
             if (playerEntry.getValue() == null) {
                 return playerEntry.getKey();

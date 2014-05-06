@@ -1,4 +1,17 @@
 # The first value is the chance of the item appearing in a chest
 # The second value is the item, this should be an Essentials item string
 items:
-- 100 apple 1
+- 100 apple 6
+- 45 goldenapple 2
+- 12 ironsword 1
+- 2 diamonsword 1
+- 1 diamondchestplate 1
+- 12 diamond helmet 1
+- 70 stone 32
+- 70 oakwoodplanks 32
+- 100 water 2
+- 100 lava 1
+- 50 lava 3
+- 50 water 4
+- 68 woodensword 1
+- 45 stonesword 1

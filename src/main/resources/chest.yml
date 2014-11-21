@@ -1,4 +1,13 @@
 # The first value is the chance of the item appearing in a chest
 # The second value is the item, this should be an Essentials item string
 items:
-- 100 apple 1
+- 100 apple 5
+- 302 chainhelmet 1
+- 303 chainchestplate 1
+- 268 woodensword 1
+- 1 stone 16
+- 17 oakwood 4
+- 261 bow 1
+- 262 arrow 2
+- 46 tnt 16
+- 259 flintandsteel 1

@@ -17,10 +17,10 @@ score:
   # Score modifier for groups
   groups:
     example:
-      per-kill: 3
-      per-win: 10
-      on-death: -1
-      on-leave: -1
+      per-kill: 0
+      per-win: 0
+      on-death: 0
+      on-leave: 0
 # Optional schematic specific configuration
 schematics:
   schematic-name:
